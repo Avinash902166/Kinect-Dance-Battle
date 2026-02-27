@@ -1,14 +1,15 @@
 {
     "name": "kinect-dance-name-server",
     "version": "1.0.0",
-    "description": "Player name entry server for Kinect Dance game",
+    "description": "Player name + score server for Kinect Dance game",
     "main": "server.js",
     "scripts": {
         "start": "node server.js"
     },
     "dependencies": {
         "cors": "^2.8.5",
-        "express": "^4.18.2"
+        "express": "^4.18.2",
+        "mongoose": "^8.2.0"
     },
     "engines": {
         "node": ">=18.0.0"
