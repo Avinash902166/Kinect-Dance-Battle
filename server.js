@@ -7,19 +7,35 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// In-memory store for current player names
-let playerNames = {
-  player1: '',
-  player2: '',
-  updatedAt: Date.now()
+// ─── MongoDB (optional) ──────────────────────────────────────────────────────
+let Session;
+if (process.env.MONGODB_URI) {
+  const mongoose = require('mongoose');
+  mongoose.connect(process.env.MONGODB_URI)
+    .then(() => console.log('MongoDB connected'))
+    .catch(err => console.error('MongoDB error:', err));
+
+  const sessionSchema = new mongoose.Schema({
+    player1: { name: String, score: Number },
+    player2: { name: String, score: Number },
+    winner: { name: String, score: Number },
+    createdAt: { type: Date, default: Date.now }
+  });
+  Session = mongoose.model('Session', sessionSchema);
+}
+
+// ─── In-memory state ─────────────────────────────────────────────────────────
+let playerNames = { player1: '', player2: '', updatedAt: Date.now() };
+
+let currentSession = {
+  scores: { player1: null, player2: null },  // null = not submitted yet
+  result: null,   // { winner: {name,score}, player1:{name,score}, player2:{name,score} }
+  sessionId: Date.now()
 };
 
-// GET /names — Unity polls this endpoint
-app.get('/names', (req, res) => {
-  res.json(playerNames);
-});
+// ─── Player Names ─────────────────────────────────────────────────────────────
+app.get('/names', (req, res) => res.json(playerNames));
 
-// POST /names — iPad submits names here
 app.post('/names', (req, res) => {
   const { player1, player2 } = req.body;
   playerNames = {
@@ -27,21 +43,78 @@ app.post('/names', (req, res) => {
     player2: (player2 || '').trim(),
     updatedAt: Date.now()
   };
-  console.log(`Names updated → P1: "${playerNames.player1}", P2: "${playerNames.player2}"`);
+  console.log(`Names → P1:"${playerNames.player1}" P2:"${playerNames.player2}"`);
   res.json({ success: true, names: playerNames });
 });
 
-// POST /reset — Reset names (called after game ends)
+// ─── Score Submission ─────────────────────────────────────────────────────────
+// POST /submit-score
+// Body: { playerIndex: 0|1, name: "Alice", score: 1234 }
+app.post('/submit-score', async (req, res) => {
+  const { playerIndex, name, score } = req.body;
+
+  if (playerIndex !== 0 && playerIndex !== 1) {
+    return res.status(400).json({ error: 'playerIndex must be 0 or 1' });
+  }
+
+  const playerKey = playerIndex === 0 ? 'player1' : 'player2';
+  currentSession.scores[playerKey] = { name: name || `Player ${playerIndex + 1}`, score: Number(score) || 0 };
+
+  console.log(`Score received — ${playerKey}: "${name}" = ${score}`);
+
+  // Check if both scores are in
+  if (currentSession.scores.player1 !== null && currentSession.scores.player2 !== null) {
+    const p1 = currentSession.scores.player1;
+    const p2 = currentSession.scores.player2;
+    const winner = p1.score >= p2.score ? p1 : p2;
+
+    currentSession.result = { winner, player1: p1, player2: p2 };
+
+    console.log(`Winner: "${winner.name}" with score ${winner.score}`);
+
+    // Save to MongoDB if connected
+    if (Session) {
+      try {
+        await new Session({ player1: p1, player2: p2, winner }).save();
+        console.log('Session saved to MongoDB.');
+      } catch (err) {
+        console.error('MongoDB save error:', err.message);
+      }
+    }
+  }
+
+  res.json({
+    success: true,
+    received: playerKey,
+    bothSubmitted: currentSession.result !== null,
+    result: currentSession.result
+  });
+});
+
+// ─── Get Result ───────────────────────────────────────────────────────────────
+// GET /result — Unity polls this until result is available
+app.get('/result', (req, res) => {
+  res.json({
+    ready: currentSession.result !== null,
+    result: currentSession.result,
+    sessionId: currentSession.sessionId
+  });
+});
+
+// ─── Reset ────────────────────────────────────────────────────────────────────
 app.post('/reset', (req, res) => {
   playerNames = { player1: '', player2: '', updatedAt: Date.now() };
-  console.log('Player names reset.');
+  currentSession = {
+    scores: { player1: null, player2: null },
+    result: null,
+    sessionId: Date.now()
+  };
+  console.log('Session reset.');
   res.json({ success: true });
 });
 
-// Health check for Render
+// ─── Health ───────────────────────────────────────────────────────────────────
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Kinect Dance Name Server running on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Kinect Dance Name Server running on port ${PORT}`));
