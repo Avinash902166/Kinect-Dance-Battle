@@ -1,0 +1,11 @@
+# Render deployment config
+services:
+  - type: web
+    name: kinect-dance-name-server
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: 3000
