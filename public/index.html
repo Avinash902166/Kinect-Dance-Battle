@@ -3,196 +3,201 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Kinect Dance — Player Setup</title>
+  <title>Kinect Dance Battle</title>
   <style>
+    :root {
+      --p1-color: #ff0055;
+      --p2-color: #00f2ff;
+      --bg-dark: #05050a;
+    }
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      background: #0a0a0f;
+      background: var(--bg-dark);
       color: #fff;
-      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 40px 24px;
-      background-image:
-        radial-gradient(ellipse at 20% 20%, rgba(120, 40, 200, 0.15) 0%, transparent 60%),
-        radial-gradient(ellipse at 80% 80%, rgba(0, 180, 255, 0.1) 0%, transparent 60%);
+      padding: 20px;
+      overflow: hidden;
+    }
+
+    /* CRT Scanline Overlay */
+    body::before {
+      content: " ";
+      position: fixed;
+      top: 0; left: 0; bottom: 0; right: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                  linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+      background-size: 100% 4px, 3px 100%;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .main-container {
+      width: 100%;
+      max-width: 500px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .header-group {
+      text-align: center;
+      margin-bottom: 50px;
+      transform: skewY(-2deg);
     }
 
     .logo {
-      font-size: 48px;
+      font-size: clamp(32px, 8vw, 54px);
       font-weight: 900;
-      letter-spacing: 6px;
+      font-style: italic;
+      line-height: 1;
       text-transform: uppercase;
-      background: linear-gradient(135deg, #c850c0, #4158d0, #00c3ff);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 8px;
-      text-align: center;
+      color: #fff;
+      text-shadow: 3px 3px 0px var(--p1-color), -3px -3px 0px var(--p2-color);
+      letter-spacing: -2px;
     }
 
-    .subtitle {
-      font-size: 16px;
-      color: rgba(255,255,255,0.4);
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      margin-bottom: 48px;
-      text-align: center;
-    }
-
-    .players {
+    .battle-grid {
       display: flex;
       flex-direction: column;
-      gap: 28px;
-      width: 100%;
-      max-width: 480px;
+      gap: 20px;
     }
 
-    .player-card {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 20px;
-      padding: 28px;
-      backdrop-filter: blur(10px);
+    .player-section {
+      position: relative;
+      background: #111;
+      padding: 5px;
+      clip-path: polygon(0 0, 95% 0, 100% 25%, 100% 100%, 5% 100%, 0 75%);
     }
 
-    .player-card.p1 { border-color: rgba(200, 80, 192, 0.3); }
-    .player-card.p2 { border-color: rgba(0, 195, 255, 0.3); }
+    .player-section.p1 { border-left: 8px solid var(--p1-color); }
+    .player-section.p2 { border-right: 8px solid var(--p2-color); }
 
-    .player-label {
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 3px;
+    .inner-card {
+      background: #1a1a24;
+      padding: 20px;
+      clip-path: polygon(0 0, 95% 0, 100% 25%, 100% 100%, 5% 100%, 0 75%);
+    }
+
+    .tag {
+      font-size: 10px;
+      font-weight: 900;
       text-transform: uppercase;
-      margin-bottom: 16px;
+      margin-bottom: 8px;
+      display: block;
     }
-    .p1 .player-label { color: #c850c0; }
-    .p2 .player-label { color: #00c3ff; }
+    .p1 .tag { color: var(--p1-color); }
+    .p2 .tag { color: var(--p2-color); text-align: right; }
 
     .name-input {
       width: 100%;
-      background: rgba(255,255,255,0.06);
-      border: 1.5px solid rgba(255,255,255,0.12);
-      border-radius: 12px;
-      padding: 18px 20px;
-      font-size: 28px;
-      font-weight: 600;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid rgba(255,255,255,0.1);
+      font-family: 'Courier New', monospace;
+      font-size: 24px;
       color: #fff;
+      padding: 10px 0;
       outline: none;
-      transition: border-color 0.2s, background 0.2s;
-      -webkit-appearance: none;
+      transition: all 0.3s;
     }
 
-    .name-input::placeholder { color: rgba(255,255,255,0.2); }
+    .p1 .name-input:focus { border-color: var(--p1-color); }
+    .p2 .name-input:focus { border-color: var(--p2-color); text-align: right; }
 
-    .p1 .name-input:focus { border-color: #c850c0; background: rgba(200,80,192,0.08); }
-    .p2 .name-input:focus { border-color: #00c3ff; background: rgba(0,195,255,0.08); }
+    .btn-group {
+      margin-top: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
 
     .start-btn {
-      width: 100%;
-      max-width: 480px;
-      margin-top: 36px;
-      padding: 22px;
-      background: linear-gradient(135deg, #c850c0, #4158d0);
+      background: #fff;
+      color: #000;
       border: none;
-      border-radius: 16px;
-      color: #fff;
-      font-size: 20px;
-      font-weight: 800;
-      letter-spacing: 3px;
+      padding: 20px;
+      font-size: 22px;
+      font-weight: 900;
       text-transform: uppercase;
       cursor: pointer;
-      transition: transform 0.15s, opacity 0.15s;
-      -webkit-tap-highlight-color: transparent;
+      clip-path: polygon(5% 0, 100% 0, 95% 100%, 0% 100%);
+      transition: transform 0.1s, background 0.3s;
     }
 
-    .start-btn:active { transform: scale(0.97); opacity: 0.85; }
-    .start-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+    .start-btn:hover { background: var(--p2-color); color: #000; }
+    .start-btn:active { transform: scale(0.95) skewX(-5deg); }
 
     .reset-btn {
-      width: 100%;
-      max-width: 480px;
-      margin-top: 14px;
-      padding: 16px;
       background: transparent;
-      border: 1.5px solid rgba(255,255,255,0.15);
-      border-radius: 14px;
-      color: rgba(255,255,255,0.4);
-      font-size: 14px;
-      font-weight: 600;
-      letter-spacing: 2px;
+      border: 1px solid rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.5);
+      padding: 10px;
+      font-weight: 700;
       text-transform: uppercase;
       cursor: pointer;
-      transition: border-color 0.2s, color 0.2s;
-      -webkit-tap-highlight-color: transparent;
+      font-size: 12px;
+      letter-spacing: 2px;
     }
 
-    .reset-btn:active { border-color: rgba(255,255,255,0.4); color: rgba(255,255,255,0.7); }
-
-    .status {
-      margin-top: 24px;
-      font-size: 14px;
-      letter-spacing: 1px;
-      color: rgba(255,255,255,0.35);
+    .status-area {
+      margin-top: 30px;
+      font-family: monospace;
       text-align: center;
-      min-height: 24px;
-      transition: color 0.3s;
+      color: #555;
+      text-transform: uppercase;
     }
 
-    .status.success { color: #4ade80; }
-    .status.error { color: #f87171; }
+    .status-area.success { color: #00ff88; text-shadow: 0 0 10px #00ff88; }
+    .status-area.error { color: #ff0055; }
 
-    .dot {
-      display: inline-block;
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: #4ade80;
-      margin-right: 8px;
-      vertical-align: middle;
-      animation: pulse 2s infinite;
+    @keyframes glitch {
+      0% { transform: translate(0); }
+      20% { transform: translate(-2px, 2px); }
+      40% { transform: translate(-2px, -2px); }
+      60% { transform: translate(2px, 2px); }
+      80% { transform: translate(2px, -2px); }
+      100% { transform: translate(0); }
     }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.3; }
-    }
+    .logo:hover { animation: glitch 0.3s infinite; }
   </style>
 </head>
 <body>
 
-  <div class="logo">INFINITE</div>
-  <div class="subtitle">2026 &nbsp;·&nbsp; Player Setup</div>
-
-  <div class="players">
-    <div class="player-card p1">
-      <div class="player-label">Player 1</div>
-      <input class="name-input" id="p1name" type="text"
-             placeholder="Enter name..." maxlength="20"
-             autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false">
+  <div class="main-container">
+    <div class="header-group">
+      <div class="logo">Kinect Dance<br>Battle</div>
     </div>
 
-    <div class="player-card p2">
-      <div class="player-label">Player 2</div>
-      <input class="name-input" id="p2name" type="text"
-             placeholder="Enter name..." maxlength="20"
-             autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false">
+    <div class="battle-grid">
+      <div class="player-section p1">
+        <div class="inner-card">
+          <span class="tag">Challenger 01</span>
+          <input class="name-input" id="p1name" type="text" placeholder="PLAYER 1" maxlength="15">
+        </div>
+      </div>
+
+      <div class="player-section p2">
+        <div class="inner-card">
+          <span class="tag">Challenger 02</span>
+          <input class="name-input" id="p2name" type="text" placeholder="PLAYER 2" maxlength="15">
+        </div>
+      </div>
     </div>
-  </div>
 
-  <button class="start-btn" id="startBtn" onclick="submitNames()">
-    START GAME
-  </button>
+    <div class="btn-group">
+      <button class="start-btn" id="startBtn" onclick="submitNames()">Submit</button>
+      <button class="reset-btn" onclick="resetNames()">Clear</button>
+    </div>
 
-  <button class="reset-btn" onclick="resetNames()">
-    Reset Names
-  </button>
-
-  <div class="status" id="status">
-    <span class="dot"></span> Ready
+    <div class="status-area" id="status">
+      System Ready // Standing By
+    </div>
   </div>
 
   <script>
@@ -200,32 +205,23 @@
     const p2 = document.getElementById('p2name');
     const statusEl = document.getElementById('status');
 
-    // Load any existing names from server on page load
-    fetch('/names')
-      .then(r => r.json())
-      .then(data => {
-        if (data.player1) p1.value = data.player1;
-        if (data.player2) p2.value = data.player2;
-      })
-      .catch(() => {});
-
-    // Submit on Enter key from either input
-    p1.addEventListener('keydown', e => { if (e.key === 'Enter') p2.focus(); });
-    p2.addEventListener('keydown', e => { if (e.key === 'Enter') submitNames(); });
+    // Load existing names
+    fetch('/names').then(r => r.json()).then(data => {
+      if (data.player1) p1.value = data.player1;
+      if (data.player2) p2.value = data.player2;
+    }).catch(() => {});
 
     async function submitNames() {
       const name1 = p1.value.trim();
       const name2 = p2.value.trim();
-
+      
       if (!name1 && !name2) {
-        showStatus('Enter at least one name', 'error');
+        showStatus('!! INPUT REQUIRED !!', 'error');
         return;
       }
 
-      const btn = document.getElementById('startBtn');
-      btn.disabled = true;
-      showStatus('Sending...', '');
-
+      showStatus('SENDING...', '');
+      
       try {
         const res = await fetch('/names', {
           method: 'POST',
@@ -234,32 +230,32 @@
         });
 
         if (res.ok) {
-          showStatus(`✓ ${name1 || 'Player 1'} & ${name2 || 'Player 2'} — Game starting!`, 'success');
+          showStatus('✓ SUBMITTED SUCCESSFULLY', 'success');
+          // Clear inputs after success
+          p1.value = '';
+          p2.value = '';
         } else {
-          showStatus('Server error — try again', 'error');
+          showStatus('!! SERVER ERROR !!', 'error');
         }
       } catch (err) {
-        showStatus('Connection failed — check network', 'error');
-      } finally {
-        btn.disabled = false;
+        showStatus('!! CONNECTION LOST !!', 'error');
       }
     }
 
     async function resetNames() {
       try {
         await fetch('/reset', { method: 'POST' });
-        p1.value = '';
+        p1.value = ''; 
         p2.value = '';
-        showStatus('Names cleared', '');
-        setTimeout(() => showStatus('<span class="dot"></span> Ready', ''), 2000);
-      } catch {
-        showStatus('Reset failed', 'error');
+        showStatus('SYSTEM CLEARED', '');
+      } catch { 
+        showStatus('CLEAR FAILED', 'error'); 
       }
     }
 
     function showStatus(msg, type) {
       statusEl.innerHTML = msg;
-      statusEl.className = 'status ' + type;
+      statusEl.className = 'status-area ' + type;
     }
   </script>
 </body>
