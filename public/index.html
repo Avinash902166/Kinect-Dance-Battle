@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -11,7 +12,11 @@
       --bg-dark: #05050a;
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
     body {
       background: var(--bg-dark);
@@ -30,9 +35,12 @@
     body::before {
       content: " ";
       position: fixed;
-      top: 0; left: 0; bottom: 0; right: 0;
-      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
-                  linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
       background-size: 100% 4px, 3px 100%;
       pointer-events: none;
       z-index: 10;
@@ -75,8 +83,13 @@
       clip-path: polygon(0 0, 95% 0, 100% 25%, 100% 100%, 5% 100%, 0 75%);
     }
 
-    .player-section.p1 { border-left: 8px solid var(--p1-color); }
-    .player-section.p2 { border-right: 8px solid var(--p2-color); }
+    .player-section.p1 {
+      border-left: 8px solid var(--p1-color);
+    }
+
+    .player-section.p2 {
+      border-right: 8px solid var(--p2-color);
+    }
 
     .inner-card {
       background: #1a1a24;
@@ -91,14 +104,21 @@
       margin-bottom: 8px;
       display: block;
     }
-    .p1 .tag { color: var(--p1-color); }
-    .p2 .tag { color: var(--p2-color); text-align: right; }
+
+    .p1 .tag {
+      color: var(--p1-color);
+    }
+
+    .p2 .tag {
+      color: var(--p2-color);
+      text-align: right;
+    }
 
     .name-input {
       width: 100%;
       background: transparent;
       border: none;
-      border-bottom: 2px solid rgba(255,255,255,0.1);
+      border-bottom: 2px solid rgba(255, 255, 255, 0.1);
       font-family: 'Courier New', monospace;
       font-size: 24px;
       color: #fff;
@@ -107,8 +127,14 @@
       transition: all 0.3s;
     }
 
-    .p1 .name-input:focus { border-color: var(--p1-color); }
-    .p2 .name-input:focus { border-color: var(--p2-color); text-align: right; }
+    .p1 .name-input:focus {
+      border-color: var(--p1-color);
+    }
+
+    .p2 .name-input:focus {
+      border-color: var(--p2-color);
+      text-align: right;
+    }
 
     .btn-group {
       margin-top: 40px;
@@ -130,13 +156,19 @@
       transition: transform 0.1s, background 0.3s;
     }
 
-    .start-btn:hover { background: var(--p2-color); color: #000; }
-    .start-btn:active { transform: scale(0.95) skewX(-5deg); }
+    .start-btn:hover {
+      background: var(--p2-color);
+      color: #000;
+    }
+
+    .start-btn:active {
+      transform: scale(0.95) skewX(-5deg);
+    }
 
     .reset-btn {
       background: transparent;
-      border: 1px solid rgba(255,255,255,0.2);
-      color: rgba(255,255,255,0.5);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: rgba(255, 255, 255, 0.5);
       padding: 10px;
       font-weight: 700;
       text-transform: uppercase;
@@ -153,20 +185,47 @@
       text-transform: uppercase;
     }
 
-    .status-area.success { color: #00ff88; text-shadow: 0 0 10px #00ff88; }
-    .status-area.error { color: #ff0055; }
+    .status-area.success {
+      color: #00ff88;
+      text-shadow: 0 0 10px #00ff88;
+    }
+
+    .status-area.error {
+      color: #ff0055;
+    }
 
     @keyframes glitch {
-      0% { transform: translate(0); }
-      20% { transform: translate(-2px, 2px); }
-      40% { transform: translate(-2px, -2px); }
-      60% { transform: translate(2px, 2px); }
-      80% { transform: translate(2px, -2px); }
-      100% { transform: translate(0); }
+      0% {
+        transform: translate(0);
+      }
+
+      20% {
+        transform: translate(-2px, 2px);
+      }
+
+      40% {
+        transform: translate(-2px, -2px);
+      }
+
+      60% {
+        transform: translate(2px, 2px);
+      }
+
+      80% {
+        transform: translate(2px, -2px);
+      }
+
+      100% {
+        transform: translate(0);
+      }
     }
-    .logo:hover { animation: glitch 0.3s infinite; }
+
+    .logo:hover {
+      animation: glitch 0.3s infinite;
+    }
   </style>
 </head>
+
 <body>
 
   <div class="main-container">
@@ -209,19 +268,19 @@
     fetch('/names').then(r => r.json()).then(data => {
       if (data.player1) p1.value = data.player1;
       if (data.player2) p2.value = data.player2;
-    }).catch(() => {});
+    }).catch(() => { });
 
     async function submitNames() {
       const name1 = p1.value.trim();
       const name2 = p2.value.trim();
-      
+
       if (!name1 && !name2) {
         showStatus('!! INPUT REQUIRED !!', 'error');
         return;
       }
 
       showStatus('SENDING...', '');
-      
+
       try {
         const res = await fetch('/names', {
           method: 'POST',
@@ -245,11 +304,11 @@
     async function resetNames() {
       try {
         await fetch('/reset', { method: 'POST' });
-        p1.value = ''; 
+        p1.value = '';
         p2.value = '';
         showStatus('SYSTEM CLEARED', '');
-      } catch { 
-        showStatus('CLEAR FAILED', 'error'); 
+      } catch {
+        showStatus('CLEAR FAILED', 'error');
       }
     }
 
@@ -259,4 +318,5 @@
     }
   </script>
 </body>
+
 </html>
