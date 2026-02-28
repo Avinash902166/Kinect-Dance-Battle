@@ -50,6 +50,8 @@ app.post('/names', (req, res) => {
 // ─── Score Submission ─────────────────────────────────────────────────────────
 // POST /submit-score
 // Body: { playerIndex: 0|1, name: "Alice", score: 1234 }
+let resetTimer = null;
+
 app.post('/submit-score', async (req, res) => {
   const { playerIndex, name, score } = req.body;
 
@@ -75,12 +77,29 @@ app.post('/submit-score', async (req, res) => {
     // Save to MongoDB if connected
     if (Session) {
       try {
-        await new Session({ player1: p1, player2: p2, winner }).save();
+        await new Session({
+          player1: { name: p1.name, score: p1.score },
+          player2: { name: p2.name, score: p2.score },
+          winner: { name: winner.name, score: winner.score }
+        }).save();
         console.log('Session saved to MongoDB.');
       } catch (err) {
         console.error('MongoDB save error:', err.message);
       }
     }
+
+    // Auto-reset session and names after 15s (gives both devices time to poll the result)
+    if (resetTimer) clearTimeout(resetTimer);
+    resetTimer = setTimeout(() => {
+      playerNames = { player1: '', player2: '', updatedAt: Date.now() };
+      currentSession = {
+        scores: { player1: null, player2: null },
+        result: null,
+        sessionId: Date.now()
+      };
+      resetTimer = null;
+      console.log('Session auto-reset after result (names and scores cleared).');
+    }, 15000);
   }
 
   res.json({
